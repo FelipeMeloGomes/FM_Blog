@@ -81,7 +81,7 @@ const AppContent = () => {
                 path="dashboard"
                 element={
                   <PrivateRoute>
-                    <Dashboard createdBy={user?.email || ""} />
+                    <Dashboard />
                   </PrivateRoute>
                 }
               />

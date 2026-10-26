@@ -66,3 +66,37 @@ export const sanitizeInput = (input: string): string => {
 export const isCommonPassword = (password: string): boolean => {
   return COMMON_PASSWORDS.includes(password.toLowerCase());
 };
+
+export interface RateLimitResult {
+  allowed: boolean;
+  remainingAttempts: number;
+  waitSeconds: number;
+}
+
+export const filterRecentAttempts = (attempts: number[], now: number): number[] => {
+  return attempts.filter(
+    (timestamp) => now - timestamp < CONSTANTS.AUTH.RATE_LIMIT_WINDOW_MS
+  );
+};
+
+export const evaluateRateLimit = (attempts: number[], now: number): RateLimitResult => {
+  const recentAttempts = filterRecentAttempts(attempts, now);
+  const maxAttempts = CONSTANTS.AUTH.RATE_LIMIT_MAX_ATTEMPTS;
+
+  if (recentAttempts.length >= maxAttempts) {
+    const oldestAttempt = Math.min(...recentAttempts);
+    const waitMs = CONSTANTS.AUTH.RATE_LIMIT_WINDOW_MS - (now - oldestAttempt);
+
+    return {
+      allowed: false,
+      remainingAttempts: 0,
+      waitSeconds: Math.ceil(waitMs / 1000),
+    };
+  }
+
+  return {
+    allowed: true,
+    remainingAttempts: maxAttempts - recentAttempts.length,
+    waitSeconds: 0,
+  };
+};
