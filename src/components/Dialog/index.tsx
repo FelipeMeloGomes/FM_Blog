@@ -96,7 +96,7 @@ export const Dialog = ({
     <dialog
       ref={dialogRef}
       className={cn(
-        "bg-background rounded-2xl p-6 max-w-md mx-auto shadow-2xl border backdrop:bg-black/60 animate-in zoom-in-95 fade-in duration-200",
+        "bg-background text-foreground rounded-2xl p-6 max-w-md mx-auto shadow-2xl border backdrop:bg-black/60 animate-in zoom-in-95 fade-in duration-200",
         className
       )}
       onClick={handleBackdropClick}

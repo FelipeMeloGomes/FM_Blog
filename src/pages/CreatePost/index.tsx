@@ -253,8 +253,9 @@ const CreatePostContent = () => {
             Continuar editando
           </Button>
           <Button
+            variant="destructive"
             onClick={() => navigate("/")}
-            className="w-full bg-destructive hover:bg-destructive/90 rounded-xl"
+            className="w-full rounded-xl"
           >
             Sair
           </Button>
