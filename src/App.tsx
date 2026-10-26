@@ -6,7 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { Layout } from "./components/Layout";
 import { PrivateRoute } from "./components/PrivateRoute";
 import { PublicRoute } from "./components/PublicRoute";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { ColorModeProvider } from "./contexts/ColorModeContext";
 import { useAuthState } from "./hooks/useAuthState";
 import { initSessionActivity } from "./utils/session";

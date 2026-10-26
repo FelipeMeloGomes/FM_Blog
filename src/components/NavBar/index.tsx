@@ -1,5 +1,5 @@
 import { Link as RouterLink } from "react-router-dom";
-import { useAuthValue } from "../../context/AuthContext";
+import { useAuthValue } from "../../contexts/AuthContext";
 import { useAuthentication } from "../../hooks/useAuthentication";
 import { AvatarMenu } from "../AvatarMenu";
 import { ColorModeToggle } from "../ColorModeToggle";

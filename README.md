@@ -171,8 +171,7 @@ FM-Blog/
 ├── src/
 │   ├── components/          # Componentes reutilizáveis
 │   │   └── ui/              # Primitivos shadcn/ui
-│   ├── context/             # AuthContext
-│   ├── contexts/            # ColorModeContext
+│   ├── contexts/            # AuthContext e ColorModeContext
 │   ├── firebase/            # Inicialização do Firebase
 │   ├── hooks/               # Hooks de dados, formulário e sessão
 │   ├── lib/

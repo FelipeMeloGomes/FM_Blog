@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { FormField } from "../../components/FormField";
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { Button } from "../../components/ui/button";
-import { useAuthValue } from "../../context/AuthContext";
+import { useAuthValue } from "../../contexts/AuthContext";
 import { uploadToCloudinary } from "../../lib/cloudinary";
 import { type ProfileFormData, profileSchema } from "../../schemas";
 

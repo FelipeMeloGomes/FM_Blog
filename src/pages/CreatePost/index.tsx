@@ -9,7 +9,7 @@ import { Editor } from "../../components/Editor";
 import { FormField } from "../../components/FormField";
 import { type ImageFile, ImageUploader } from "../../components/ImageUploader";
 import { Button } from "../../components/ui/button";
-import { useAuthValue } from "../../context/AuthContext";
+import { useAuthValue } from "../../contexts/AuthContext";
 import { useInsertDocument } from "../../hooks/useInsertDocument";
 import { transformCloudinaryUrl, uploadToCloudinary } from "../../lib/cloudinary";
 import { type CreatePostFormData, createPostSchema } from "../../schemas";

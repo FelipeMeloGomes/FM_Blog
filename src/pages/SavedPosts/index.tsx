@@ -4,7 +4,7 @@ import { EmptyState } from "../../components/EmptyState";
 import { Pagination } from "../../components/Pagination";
 import { PostCard } from "../../components/PostCard";
 import { Skeleton } from "../../components/ui/skeleton";
-import { useAuthValue } from "../../context/AuthContext";
+import { useAuthValue } from "../../contexts/AuthContext";
 import { useFetchDocuments } from "../../hooks/useFetchDocuments";
 import { useSavedPosts } from "../../hooks/useSavedPosts";
 

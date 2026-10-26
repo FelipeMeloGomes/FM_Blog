@@ -8,7 +8,7 @@ import { RelatedPosts } from "../../components/RelatedPosts";
 import { ShareButton } from "../../components/ShareButton";
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { Button } from "../../components/ui/button";
-import { useAuthValue } from "../../context/AuthContext";
+import { useAuthValue } from "../../contexts/AuthContext";
 import { usePostViews } from "../../hooks/usePostViews";
 import { useRelatedPosts } from "../../hooks/useRelatedPosts";
 import { useSavedPosts } from "../../hooks/useSavedPosts";

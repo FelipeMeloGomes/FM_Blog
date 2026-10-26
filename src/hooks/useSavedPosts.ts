@@ -1,7 +1,7 @@
 import { collection, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useAuthValue } from "../context/AuthContext";
+import { useAuthValue } from "../contexts/AuthContext";
 import { db } from "../firebase/config";
 
 interface SavedPost {

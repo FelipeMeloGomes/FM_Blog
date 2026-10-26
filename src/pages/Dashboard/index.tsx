@@ -20,7 +20,7 @@ import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
 import { Input } from "../../components/ui/input";
 import { Skeleton } from "../../components/ui/skeleton";
-import { useAuthValue } from "../../context/AuthContext";
+import { useAuthValue } from "../../contexts/AuthContext";
 import { useDeleteDocument } from "../../hooks/useDeleteDocument";
 import { useMetrics } from "../../hooks/useMetrics";
 import { usePostsViews } from "../../hooks/usePostsViews";
