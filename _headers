@@ -1,7 +1,0 @@
-/* 
-  Cache-Control: public, max-age=31536000
-  Content-Encoding: br, gzip
-
-/assets/*
-  Cache-Control: public, max-age=31536000
-  Content-Encoding: br, gzip

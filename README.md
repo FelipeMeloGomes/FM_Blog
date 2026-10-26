@@ -167,7 +167,7 @@ Todas as páginas são carregadas com `React.lazy` e `Suspense`, com fallback de
 FM-Blog/
 ├── e2e/
 │   └── specs/               # Auth, Navigation, Responsive, Search, Seo
-├── public/                  # robots.txt, sitemap.xml, _headers
+├── public/                  # robots.txt, sitemap.xml
 ├── src/
 │   ├── components/          # Componentes reutilizáveis
 │   │   └── ui/              # Primitivos shadcn/ui
@@ -207,7 +207,7 @@ pnpm test:e2e      # end-to-end
 
 O deploy principal é feito na **Vercel**, com rewrite de SPA configurado em `vercel.json` para que todas as rotas resolvam em `index.html`. O build roda `pnpm build` e publica a pasta `dist/`.
 
-Como alternativa à Vercel, o projeto mantém `public/_headers` com cabeçalhos de segurança (CSP, HSTS, `X-Frame-Options`), no formato aceito por plataformas como a Netlify. Nesse caso, o redirecionamento de SPA precisa ser configurado manualmente para `index.html`. Em qualquer plataforma, as variáveis de ambiente da seção [Configuração](#configuração) precisam ser cadastradas no painel do projeto.
+As variáveis de ambiente da seção [Configuração](#configuração) precisam ser cadastradas no painel do projeto.
 
 ## Segurança
 
@@ -216,6 +216,7 @@ Como alternativa à Vercel, o projeto mantém `public/_headers` com cabeçalhos 
 - HTML dos posts sanitizado com DOMPurify antes da renderização
 - Preferências, visualizações e posts salvos isolados por UID
 - Sessão encerrada automaticamente após inatividade
+- Cabeçalhos de segurança (CSP, HSTS, `X-Frame-Options`, `Permissions-Policy`) aplicados em produção via `vercel.json`
 
 ## Agradecimentos
 
