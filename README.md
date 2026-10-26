@@ -186,8 +186,7 @@ FM-Blog/
 │   └── utils/               # Constantes, datas, sanitização e sessão
 ├── firestore.rules          # Regras de segurança do Firestore
 ├── firestore.indexes.json   # Índices compostos
-├── vercel.json              # Rewrites de SPA
-└── netlify.toml             # Redirecionamentos (alternativa)
+└── vercel.json              # Rewrites de SPA
 ```
 
 O alias `@` aponta para `src/` (configurado em `vite.config.ts`).
@@ -208,7 +207,7 @@ pnpm test:e2e      # end-to-end
 
 O deploy principal é feito na **Vercel**, com rewrite de SPA configurado em `vercel.json` para que todas as rotas resolvam em `index.html`. O build roda `pnpm build` e publica a pasta `dist/`.
 
-Como alternativa, o repositório também inclui configuração para **Netlify**: `netlify.toml` com os redirecionamentos de SPA e `public/_headers` com cabeçalhos de segurança (CSP, HSTS, `X-Frame-Options`). Em qualquer plataforma, as variáveis de ambiente da seção [Configuração](#configuração) precisam ser cadastradas no painel do projeto.
+Como alternativa à Vercel, o projeto mantém `public/_headers` com cabeçalhos de segurança (CSP, HSTS, `X-Frame-Options`), no formato aceito por plataformas como a Netlify. Nesse caso, o redirecionamento de SPA precisa ser configurado manualmente para `index.html`. Em qualquer plataforma, as variáveis de ambiente da seção [Configuração](#configuração) precisam ser cadastradas no painel do projeto.
 
 ## Segurança
 
