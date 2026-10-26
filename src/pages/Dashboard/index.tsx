@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   FiBarChart,
@@ -40,20 +40,39 @@ const MenuDropdown = ({ postId, isOpen, onToggle, onDelete }: MenuDropdownProps)
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
+  const updatePosition = useCallback(() => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    setPosition({
+      top: rect.bottom + 8,
+      left: rect.right - 160,
+    });
+  }, []);
+
+  const handleToggle = () => {
+    updatePosition();
+    onToggle();
+  };
+
   useEffect(() => {
-    if (isOpen && buttonRef.current) {
-      const button = buttonRef.current;
-      const rect = button.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + 8,
-        left: rect.right - 160,
-      });
-    }
-  }, [isOpen]);
+    if (!isOpen) return;
+
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [isOpen, updatePosition]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        !buttonRef.current?.contains(target)
+      ) {
         onToggle();
       }
     };
@@ -70,7 +89,7 @@ const MenuDropdown = ({ postId, isOpen, onToggle, onDelete }: MenuDropdownProps)
         type="button"
         className="p-2.5 hover:bg-secondary/80 rounded-lg transition-all duration-200 hover:scale-105"
         aria-label="Opções do post"
-        onClick={onToggle}
+        onClick={handleToggle}
       >
         <FiMoreVertical className="h-4 w-4 text-muted-foreground" />
       </button>
@@ -78,7 +97,7 @@ const MenuDropdown = ({ postId, isOpen, onToggle, onDelete }: MenuDropdownProps)
         createPortal(
           <div
             ref={menuRef}
-            className="fixed z-[100] py-1.5 min-w-[160px] bg-card rounded-xl border shadow-xl animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-[100] py-1.5 min-w-[160px] bg-card rounded-xl border shadow-xl origin-top-right animate-in fade-in zoom-in-95 duration-150"
             style={{ top: position.top, left: position.left }}
           >
             <a
