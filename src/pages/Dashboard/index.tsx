@@ -572,29 +572,33 @@ const Dashboard = () => {
                 <FiTrash className="h-5 w-5 text-red-500" />
               </div>
               <h2 className="text-lg font-semibold">
-                {selectedIds.size > 0 ? "Deletar posts" : "Deletar post"}
+                {selectedIds.size > 1 ? "Deletar posts" : "Deletar post"}
               </h2>
             </div>
-            <p className="text-muted-foreground mb-6">
-              {selectedIds.size > 0 ? (
-                <>
-                  Tem certeza que deseja deletar{" "}
-                  <span className="font-semibold text-foreground">{selectedIds.size} posts</span>?
-                  Esta ação não pode ser desfeita.
-                </>
-              ) : (
-                <>
-                  Tem certeza que deseja deletar{" "}
-                  <span className="font-semibold text-foreground">"{postTitleToDelete}"</span>? Esta
-                  ação não pode ser desfeita.
-                </>
-              )}
-            </p>
+            <div className="mb-6 space-y-1.5 text-muted-foreground">
+              <p className="break-words">
+                {selectedIds.size > 0 ? (
+                  <>
+                    Tem certeza que deseja deletar{" "}
+                    <span className="font-semibold text-foreground">
+                      {selectedIds.size} {selectedIds.size === 1 ? "post" : "posts"}
+                    </span>
+                    ?
+                  </>
+                ) : (
+                  <>
+                    Tem certeza que deseja deletar{" "}
+                    <span className="font-semibold text-foreground">"{postTitleToDelete}"</span>?
+                  </>
+                )}
+              </p>
+              <p>Esta ação não pode ser desfeita.</p>
+            </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button variant="outline" onClick={() => setIsOpen(false)} className="flex-1">
                 Cancelar
               </Button>
-              <Button onClick={handleDelete} className="flex-1 gap-2 bg-red-500 hover:bg-red-600">
+              <Button variant="destructive" onClick={handleDelete} className="flex-1 gap-2">
                 <FiTrash className="h-4 w-4" />
                 Deletar
               </Button>
