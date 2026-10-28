@@ -125,7 +125,7 @@ O que falta para exigir o token:
 
 Para recriar ou trocar a chave: Google Cloud → Fraud Defense → chaves (tipo *score-based*, domínio de produção). Para usar em preview, o domínio do deploy precisa ser adicionado à chave.
 
-Localmente não se usa essa chave: `localhost` não está liberado nela, de propósito. Em `DEV` o App Check aceita o debug token (`VITE_APPCHECK_DEBUG_TOKEN`), que aparece no console do Firebase ao registrar o token.
+Localmente não se usa essa chave: `localhost` não está liberado nela, de propósito. Em `DEV` o SDK entra em modo debug e chama o token de depuração (nunca o reCAPTCHA). O token aparece no console do navegador no primeiro load e precisa ser registrado em App Check → Apps → menu do app → *Gerenciar tokens de depuração*, senão a troca falha — o que só bloqueia de fato depois que a exigência for ligada.
 
 O CSP em `vercel.json` libera o que o App Check precisa: `google.com/recaptcha/` e `gstatic.com/recaptcha/` em `script-src`, `frame-src` e `connect-src`, mais `content-firebaseappcheck.googleapis.com` em `connect-src` (troca do token). Sem isso o SDK é bloqueado e, com a exigência ligada, o app perde o Firestore.
 
