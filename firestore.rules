@@ -11,15 +11,10 @@ service cloud.firestore {
     // Nao existe lista de uids: conceder ou revogar o papel e uma alteracao na
     // conta, sem deploy. O efeito aparece quando o token e renovado (login ou
     // ate 1h), porque o claim viaja assinado dentro dele.
-    //
-    // O uid fixo abaixo e so transicao: garante que o dono continue
-    // publicando enquanto o token dele nao carrega o claim novo. Remover na
-    // segunda etapa.
     // ---------------------------------------------------------------------
     function isAuthor() {
       return request.auth != null
-             && (request.auth.token.get('author', false) == true
-                 || request.auth.uid == '3mgWMmUyNvW2iIJyTirGhxHt4hE3');
+             && request.auth.token.get('author', false) == true;
     }
 
     // ---------------------------------------------------------------------
