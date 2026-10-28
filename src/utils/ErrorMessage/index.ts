@@ -14,6 +14,10 @@ const errorMessages: Record<string, string> = {
 
   // Senha
   "wrong-password": "Senha incorreta.",
+  // O Firebase passou a responder este código tanto para senha errada quanto
+  // para e-mail inexistente. Mensagem única evita confirmar se a conta existe.
+  "invalid-credential": "E-mail ou senha incorretos.",
+  "invalid-login-credentials": "E-mail ou senha incorretos.",
 
   // Google / Popup
   "popup-closed-by-user": "Login cancelado. A janela foi fechada.",

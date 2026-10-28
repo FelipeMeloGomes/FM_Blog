@@ -44,7 +44,7 @@ describe("useAuthentication > login", () => {
 
       await expect(
         result.current.login({ email: "ninguem@example.com", password: "errada" })
-      ).rejects.toThrow();
+      ).rejects.toThrow("E-mail ou senha incorretos.");
       expect(mocks.getIdToken).not.toHaveBeenCalled();
     });
   });
