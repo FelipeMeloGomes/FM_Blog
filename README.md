@@ -67,7 +67,7 @@ O FM Blog foi desenvolvido como projeto de portfólio front-end, priorizando arq
 | Formulários e validação | React Hook Form, Zod |
 | Conteúdo | TipTap 3, DOMPurify, tocbot |
 | Backend (BaaS) | Firebase 10 (Authentication + Firestore), Cloudinary |
-| Build e qualidade | Vite 5, Biome 1.9, Vitest, Playwright |
+| Build e qualidade | Vite 5, Biome 1.9, Vitest |
 
 ## Pré-requisitos
 
@@ -137,9 +137,6 @@ pnpm preview
 | `pnpm test` | Testes unitários (Vitest, modo watch) |
 | `pnpm test:run` | Testes unitários em execução única |
 | `pnpm test:ui` | Interface gráfica do Vitest |
-| `pnpm test:e2e` | Testes end-to-end com Playwright |
-| `pnpm test:e2e:headed` | E2E com navegador visível |
-| `pnpm test:e2e:ui` | Playwright em modo UI |
 
 ## Rotas
 
@@ -165,8 +162,6 @@ Todas as páginas são carregadas com `React.lazy` e `Suspense`, com fallback de
 
 ```
 FM-Blog/
-├── e2e/
-│   └── specs/               # Auth, Navigation, Responsive, Search, Seo
 ├── public/                  # robots.txt, sitemap.xml
 ├── src/
 │   ├── components/          # Componentes reutilizáveis
@@ -194,13 +189,9 @@ O alias `@` aponta para `src/` (configurado em `vite.config.ts`).
 ## Testes
 
 - **Unitários (Vitest + Testing Library)** em `src/tests/`: sanitização de HTML, schemas Zod (login, cadastro, posts, comentários e perfil), utilitários de segurança com rate limiting e busca avançada.
-- **End-to-end (Playwright)** em `e2e/specs/`: autenticação, navegação, responsividade, busca e SEO.
-
-O Playwright sobe o servidor de desenvolvimento automaticamente na porta `5173` (veja `playwright.config.ts`).
 
 ```bash
 pnpm test:run      # unitários
-pnpm test:e2e      # end-to-end
 ```
 
 ## Deploy
