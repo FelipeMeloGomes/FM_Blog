@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Instalar pnpm
         uses: pnpm/action-setup@v4
@@ -64,7 +64,7 @@ jobs:
       VERCEL_DEPLOY_FLAGS: ${{ github.ref == 'refs/heads/beta' && '--meta githubDeployment=1 --meta githubCommitRef=beta' || '' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Instalar pnpm
         uses: pnpm/action-setup@v4
