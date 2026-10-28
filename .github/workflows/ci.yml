@@ -46,3 +46,43 @@ jobs:
 
       - name: Build de producao
         run: pnpm build
+
+  deploy:
+    name: Deploy de producao (Vercel)
+    needs: quality
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_ORG_ID: team_ErCtxu5MLPTnHmXxQXTHoRu3
+      VERCEL_PROJECT_ID: prj_RXaJR1K8S5BvlA9SGdD3dMobWjwN
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Conferir o secret VERCEL_TOKEN
+        if: env.VERCEL_TOKEN == ''
+        run: |
+          echo "::error::Secret VERCEL_TOKEN ausente. Crie o token em https://vercel.com/account/tokens e salve em Settings > Secrets and variables > Actions."
+          exit 1
+
+      - name: Instalar a Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Baixar as variaveis do projeto
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build com as variaveis de producao
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Publicar em producao
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
