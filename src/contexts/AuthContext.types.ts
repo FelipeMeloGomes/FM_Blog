@@ -6,6 +6,8 @@ export interface User {
   email: string;
   uid?: string;
   photoURL?: string | null;
+  /** Custom claim `author`: pode publicar, editar e apagar posts. */
+  isAuthor?: boolean;
 }
 
 export interface AuthValue {

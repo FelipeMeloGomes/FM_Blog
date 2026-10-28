@@ -142,7 +142,8 @@ export const useAuthentication = (): AuthenticationResult => {
     setState({ ...state, loading: true, error: null });
     try {
       const { user } = await signInWithEmailAndPassword(auth, data.email, data.password);
-      const token = await getIdToken(user);
+      // Força um token novo: o claim `author` pode ter mudado desde o último login.
+      const token = await getIdToken(user, true);
       await clearRateLimitFirestore(data.email);
       setState({ ...state, user, token });
       showToast({
@@ -175,7 +176,8 @@ export const useAuthentication = (): AuthenticationResult => {
     setState({ ...state, loading: true, error: null });
     try {
       const { user } = await signInWithPopup(auth, provider);
-      const token = await getIdToken(user);
+      // Força um token novo: o claim `author` pode ter mudado desde o último login.
+      const token = await getIdToken(user, true);
       setState({ ...state, user, token });
       showToast({
         title: "Success",

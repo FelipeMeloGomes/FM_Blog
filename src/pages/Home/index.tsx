@@ -8,7 +8,6 @@ import { SearchForm } from "../../components/SearchForm";
 import { useAuthValue } from "../../contexts/AuthContext";
 import { usePaginatedDocuments } from "../../hooks/usePaginatedDocuments";
 import { useSearchPost } from "../../hooks/useSearchPost";
-import { isAuthor } from "../../utils/authors";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -74,7 +73,7 @@ const Home = () => {
           title="Nenhum post ainda"
           description="Seja o primeiro a publicar algo incrível aqui."
           action={
-            isAuthor(user?.uid)
+            user?.isAuthor
               ? { label: "Criar primeiro post", onClick: () => navigate("/posts/create") }
               : undefined
           }

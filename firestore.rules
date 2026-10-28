@@ -4,15 +4,22 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ---------------------------------------------------------------------
-    // Quem pode publicar. Espelha src/utils/authors.ts.
-    // O cadastro e aberto, entao sem isto qualquer conta criada em segundos
-    // publicaria no blog. Para adicionar um autor, inclua o uid na lista e
-    // em src/utils/authors.ts (a UI precisa da mesma lista para esconder os
-    // botoes). O uid nao e segredo: ele ja aparece no campo `uid` dos posts.
+    // Quem pode publicar: custom claim `author`, definido na conta do usuario
+    // (Firebase Auth). O cadastro e aberto, entao sem isto qualquer conta
+    // criada em segundos publicaria no blog.
+    //
+    // Nao existe lista de uids: conceder ou revogar o papel e uma alteracao na
+    // conta, sem deploy. O efeito aparece quando o token e renovado (login ou
+    // ate 1h), porque o claim viaja assinado dentro dele.
+    //
+    // O uid fixo abaixo e so transicao: garante que o dono continue
+    // publicando enquanto o token dele nao carrega o claim novo. Remover na
+    // segunda etapa.
     // ---------------------------------------------------------------------
     function isAuthor() {
       return request.auth != null
-             && request.auth.uid in ['3mgWMmUyNvW2iIJyTirGhxHt4hE3'];
+             && (request.auth.token.get('author', false) == true
+                 || request.auth.uid == '3mgWMmUyNvW2iIJyTirGhxHt4hE3');
     }
 
     // ---------------------------------------------------------------------

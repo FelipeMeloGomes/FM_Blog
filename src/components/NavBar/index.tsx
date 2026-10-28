@@ -1,7 +1,6 @@
 import { Link as RouterLink } from "react-router-dom";
 import { useAuthValue } from "../../contexts/AuthContext";
 import { useAuthentication } from "../../hooks/useAuthentication";
-import { isAuthor } from "../../utils/authors";
 import { AvatarMenu } from "../AvatarMenu";
 import { ColorModeToggle } from "../ColorModeToggle";
 import { NavBarMobile } from "../NavBarMobile";
@@ -31,7 +30,7 @@ const NavBar = () => {
 
           {user ? (
             <>
-              {isAuthor(user.uid) && (
+              {user.isAuthor && (
                 <RouterLink
                   to="/posts/create"
                   className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-all duration-200"

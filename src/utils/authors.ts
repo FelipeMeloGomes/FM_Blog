@@ -1,25 +1,28 @@
 /**
- * Contas com permissão de publicar no blog.
+ * O papel de autor vive no token do usuário, como custom claim `author`.
  *
- * Esta lista precisa espelhar a função `isAuthor()` de `firestore.rules`.
- * A regra é a fonte da verdade — o Firestore é quem bloqueia; esta lista só
- * evita mostrar botões e rotas que vão falhar com "permission denied".
+ * Não existe lista de UIDs no repositório nem coleção no Firestore: a
+ * marcação é um atributo da conta, assinado pelo Firebase Auth dentro do ID
+ * token. Regras (`request.auth.token.get('author', false)`) e interface leem
+ * o mesmo claim — então adicionar ou remover um autor não exige deploy, só
+ * uma alteração na conta (console ou Admin SDK).
  *
- * O UID não é segredo: ele já aparece publicamente no campo `uid` dos posts.
+ * Depois de mudar o claim, o usuário só vê o efeito com um token novo:
+ * logout/login, ou até 1 hora (tempo de vida do token).
  */
-export const AUTHOR_UIDS = ["3mgWMmUyNvW2iIJyTirGhxHt4hE3"];
+export const AUTHOR_CLAIM = "author";
 
 /**
- * Verifica se o usuário logado pode publicar, editar e excluir posts.
+ * Lê o claim de autor de dentro dos claims de um ID token.
  *
- * @param uid - UID do usuário autenticado (ou `null`/`undefined` se anônimo)
+ * @param claims - `tokenResult.claims` do Firebase Auth
  *
  * @example
- * ```tsx
- * const { user } = useAuthValue() ?? {};
- * {isAuthor(user?.uid) && <Link to="/posts/create">Novo post</Link>}
+ * ```ts
+ * const { claims } = await user.getIdTokenResult();
+ * if (hasAuthorClaim(claims)) { ... }
  * ```
  */
-export const isAuthor = (uid?: string | null): boolean => {
-  return uid != null && AUTHOR_UIDS.includes(uid);
+export const hasAuthorClaim = (claims?: Record<string, unknown> | null): boolean => {
+  return claims?.[AUTHOR_CLAIM] === true;
 };

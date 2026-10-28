@@ -1,6 +1,5 @@
 import { Navigate } from "react-router-dom";
 import { useAuthState } from "../../hooks/useAuthState";
-import { isAuthor } from "../../utils/authors";
 
 interface AuthorRouteProps {
   children: React.ReactNode;
@@ -9,10 +8,10 @@ interface AuthorRouteProps {
 /**
  * Rota restrita a quem pode publicar.
  *
- * Complementa `PrivateRoute`: além de exigir login, exige que o uid esteja em
- * `AUTHOR_UIDS` — a mesma lista da função `isAuthor()` de `firestore.rules`.
- * Quem não é autor volta para a home em vez de ver um formulário que só
- * falharia no envio ("permission denied").
+ * Complementa `PrivateRoute`: além de exigir login, exige o custom claim
+ * `author` no ID token — a mesma condição da função `isAuthor()` de
+ * `firestore.rules`. Quem não é autor volta para a home em vez de ver um
+ * formulário que só falharia no envio ("permission denied").
  */
 export function AuthorRoute({ children }: AuthorRouteProps) {
   const { user, loading } = useAuthState();
@@ -29,7 +28,7 @@ export function AuthorRoute({ children }: AuthorRouteProps) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!isAuthor(user.uid)) {
+  if (!user.isAuthor) {
     return <Navigate to="/" replace />;
   }
 

@@ -16,7 +16,6 @@ import { useViewCount } from "../../hooks/useViewCount";
 import { usePost } from "../../lib/hooks/usePostsQuery";
 import { handleShare } from "../../utils/ShareContent";
 import type { Post as PostType } from "../../utils/ShareContent/types";
-import { isAuthor } from "../../utils/authors";
 import { calculateReadTime, formatDate } from "../../utils/date";
 import { sanitizeHtml } from "../../utils/sanitize";
 
@@ -51,7 +50,7 @@ const Post = () => {
 
   const readTime = calculateReadTime(String(post.body || ""));
   const formattedDate = formatDate(post.createdAt);
-  const isOwner = isAuthor(user?.uid) && user?.uid === post.uid;
+  const isOwner = Boolean(user?.isAuthor) && user?.uid === post.uid;
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-6 md:py-8 space-y-8">
