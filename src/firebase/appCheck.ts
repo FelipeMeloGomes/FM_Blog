@@ -1,23 +1,31 @@
 import type { FirebaseApp } from "firebase/app";
-import { ReCaptchaV3Provider, initializeAppCheck } from "firebase/app-check";
+import { ReCaptchaEnterpriseProvider, initializeAppCheck } from "firebase/app-check";
 
 /**
- * Chave do reCAPTCHA v3 criada no console do Firebase
- * (App Check → Firestore → reCAPTCHA v3).
+ * Chave *score-based* do Fraud Defense (antigo reCAPTCHA Enterprise), criada
+ * no console do Google Cloud e registrada em App Check → Firestore →
+ * reCAPTCHA Enterprise.
+ *
+ * Não serve uma chave do reCAPTCHA v3: são produtos diferentes, e o provider
+ * abaixo só aceita a chave Enterprise.
  *
  * Enquanto não existir, o App Check simplesmente não é inicializado — o app
  * funciona exatamente como antes. É de propósito: a exigência do token só
  * pode ser ligada depois que os clientes já estão enviando um.
  */
-const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+const SITE_KEY = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY;
 
 /**
- * Ativa o App Check com reCAPTCHA v3, se houver chave configurada.
+ * Ativa o App Check com Fraud Defense (reCAPTCHA Enterprise), se houver chave.
  *
  * O token só passa a ser *exigido* pelo Firestore quando a exigência é ligada
  * no console. Ativar aqui é a primeira metade: a partir daí todo request leva
  * o token, e o console mostra a proporção de tráfego verificado antes de
  * qualquer bloqueio.
+ *
+ * A execução depende de o CSP em `vercel.json` liberar `google.com/recaptcha/`
+ * e `gstatic.com/recaptcha/`. Sem isso o script do Enterprise é bloqueado e,
+ * com a exigência ligada, o app perde acesso ao Firestore.
  *
  * @param app - Instância do Firebase já inicializada
  * @returns `true` se o App Check foi inicializado
@@ -36,7 +44,7 @@ export const initAppCheck = (app: FirebaseApp): boolean => {
   }
 
   initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(SITE_KEY),
+    provider: new ReCaptchaEnterpriseProvider(SITE_KEY),
     isTokenAutoRefreshEnabled: true,
   });
 

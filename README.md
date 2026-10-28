@@ -94,7 +94,7 @@ cp .env.example .env.local
 | `VITE_FIREBASE_APP_ID` | Console do Firebase → Configurações do projeto |
 | `VITE_CLOUDINARY_CLOUD_NAME` | Dashboard do Cloudinary |
 | `VITE_CLOUDINARY_UPLOAD_PRESET` | Cloudinary → Settings → Upload → Upload presets |
-| `VITE_RECAPTCHA_SITE_KEY` | App Check → Firestore → reCAPTCHA v3 (opcional) |
+| `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY` | Google Cloud → Fraud Defense → chave score-based (opcional) |
 | `VITE_APPCHECK_DEBUG_TOKEN` | Token de debug do App Check, só em desenvolvimento (opcional) |
 
 > [!IMPORTANT]
@@ -110,12 +110,26 @@ Antes de publicar, rode `pnpm test:rules`: são 53 cenários contra o emulador, 
 
 ### App Check
 
-Sem `VITE_RECAPTCHA_SITE_KEY` o App Check não é inicializado e nada muda. Para ativar:
+O provider é o **Fraud Defense** (antigo reCAPTCHA Enterprise), com chave *score-based*. Chave do reCAPTCHA v3 não serve: são produtos diferentes.
 
-1. Console do Firebase → App Check → Firestore → reCAPTCHA v3 → registrar o app web.
-2. Copiar a chave e definir `VITE_RECAPTCHA_SITE_KEY` no `.env.local` e na Vercel.
-3. Deixar a exigência em **monitoramento** por alguns dias, conferindo a proporção de tráfego verificado.
-4. Só então marcar como exigido.
+Estado atual, já configurado:
+
+- Chave `FM Blog - App Check` no projeto `miniblog-b2776`, com `fm-blog.vercel.app` como único domínio liberado e `integrationType: SCORE`.
+- Registrada em App Check para o app web, com TTL de token de 1 h e score mínimo 0,5.
+- `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY` definida na Vercel **apenas em production**. O beta fica sem App Check porque o domínio de preview não está na chave.
+
+O que falta para exigir o token:
+
+1. Deixar em **monitoramento** por alguns dias, conferindo no console a proporção de tráfego verificado.
+2. Só então marcar a exigência para o Firestore.
+
+Para recriar ou trocar a chave: Google Cloud → Fraud Defense → chaves (tipo *score-based*, domínio de produção). Para usar em preview, o domínio do deploy precisa ser adicionado à chave.
+
+Localmente não se usa essa chave: `localhost` não está liberado nela, de propósito. Em `DEV` o App Check aceita o debug token (`VITE_APPCHECK_DEBUG_TOKEN`), que aparece no console do Firebase ao registrar o token.
+
+O CSP em `vercel.json` libera o que o App Check precisa: `google.com/recaptcha/` e `gstatic.com/recaptcha/` em `script-src`, `frame-src` e `connect-src`, mais `content-firebaseappcheck.googleapis.com` em `connect-src` (troca do token). Sem isso o SDK é bloqueado e, com a exigência ligada, o app perde o Firestore.
+
+No plano Spark só existem 4 níveis de score (0.1, 0.3, 0.7 e 0.9); os 11 níveis exigem conta de faturamento vinculada ao projeto, ou seja, Blaze. A franquia do Fraud Defense Essentials é de 10.000 assessments por mês — acima disso as requisições passam a falhar, a menos que billing esteja habilitado.
 
 ### Backup
 
