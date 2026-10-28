@@ -38,17 +38,12 @@ service cloud.firestore {
     }
 
     // ---------------------------------------------------------------------
-    // Rate limit: fechado de proposito.
-    //
-    // O cliente consulta esta colecao ANTES do login (request.auth == null).
-    // Com qualquer regra que exigisse autenticacao a leitura falhava, o catch
-    // do hook devolvia "allowed: true" e o limite nunca era aplicado. Pior:
-    // gravava o e-mail em texto claro. Rate limit de verdade precisa rodar no
-    // servidor (Cloud Function / Identity Platform), nao no cliente.
+    // Rate limit: nao existe mais colecao. O cliente consultava
+    // /rateLimits ANTES do login (request.auth == null), entao a leitura
+    // falhava sempre, o catch liberava tudo e o limite nunca valia — alem de
+    // gravar e-mail em texto claro. Limite de tentativas precisa rodar no
+    // servidor (Identity Platform / Cloud Function), nao no cliente.
     // ---------------------------------------------------------------------
-    match /rateLimits/{emailHash} {
-      allow read, write: if false;
-    }
 
     // ---------------------------------------------------------------------
     // Posts: leitura publica (blog), escrita restrita ao autor.

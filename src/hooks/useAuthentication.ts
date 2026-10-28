@@ -14,17 +14,16 @@ import { useEffect, useState } from "react";
 import { auth } from "../firebase/config";
 import { errorMessages } from "../utils/ErrorMessage";
 import type { AuthenticationResult, AuthenticationState, UserData } from "./types";
-import {
-  checkRateLimitFirestore,
-  clearRateLimitFirestore,
-  recordFailedAttemptFirestore,
-} from "./useRateLimit";
 import { useToastNotification } from "./useToastNotification";
 
 /**
  * Hook para gerenciar autenticação com Firebase.
  * Fornece funções para login, registro, logout, login com Google e reset de senha.
- * Inclui rate limiting para prevenir ataques de força bruta.
+ *
+ * Não há rate limit no cliente: a tentativa anterior consultava o Firestore
+ * antes do login, quando `request.auth` ainda é nulo, então falhava sempre e
+ * liberava tudo — além de gravar o e-mail em texto claro. Limite de tentativas
+ * precisa rodar no servidor (Identity Platform).
  *
  * @returns Objeto com funções de autenticação e estado atual
  *
@@ -63,29 +62,11 @@ export const useAuthentication = (): AuthenticationResult => {
   const createUser = async (data: UserData): Promise<void> => {
     checkIfIsCancelled();
 
-    const rateLimit = await checkRateLimitFirestore(data.email);
-    if (!rateLimit.allowed) {
-      const minutes = Math.ceil(rateLimit.waitSeconds / 60);
-      const errorMessage = `Muitas tentativas de registro. Tente novamente em ${minutes} minuto(s).`;
-      showToast({
-        title: "Erro",
-        description: errorMessage,
-        status: "error",
-      });
-      setState((prevState) => ({
-        ...prevState,
-        error: errorMessage,
-        loading: false,
-      }));
-      throw new Error(errorMessage);
-    }
-
     setState({ ...state, loading: true });
     try {
       const { user } = await createUserWithEmailAndPassword(auth, data.email, data.password);
       await updateProfile(user, { displayName: data.displayName });
       const token = await getIdToken(user);
-      await clearRateLimitFirestore(data.email);
       setState({ ...state, user, token });
       showToast({
         title: "Success",
@@ -93,7 +74,6 @@ export const useAuthentication = (): AuthenticationResult => {
         status: "success",
       });
     } catch (error) {
-      await recordFailedAttemptFirestore(data.email);
       const errorMessage = handleErrorMessage(error as AuthError);
       setState((prevState) => ({
         ...prevState,
@@ -122,29 +102,11 @@ export const useAuthentication = (): AuthenticationResult => {
   const login = async (data: Omit<UserData, "displayName">): Promise<void> => {
     checkIfIsCancelled();
 
-    const rateLimit = await checkRateLimitFirestore(data.email);
-    if (!rateLimit.allowed) {
-      const minutes = Math.ceil(rateLimit.waitSeconds / 60);
-      const errorMessage = `Muitas tentativas de login. Tente novamente em ${minutes} minuto(s).`;
-      showToast({
-        title: "Erro",
-        description: errorMessage,
-        status: "error",
-      });
-      setState((prevState) => ({
-        ...prevState,
-        error: errorMessage,
-        loading: false,
-      }));
-      throw new Error(errorMessage);
-    }
-
     setState({ ...state, loading: true, error: null });
     try {
       const { user } = await signInWithEmailAndPassword(auth, data.email, data.password);
       // Força um token novo: o claim `author` pode ter mudado desde o último login.
       const token = await getIdToken(user, true);
-      await clearRateLimitFirestore(data.email);
       setState({ ...state, user, token });
       showToast({
         title: "Success",
@@ -153,7 +115,6 @@ export const useAuthentication = (): AuthenticationResult => {
         status: "success",
       });
     } catch (error) {
-      await recordFailedAttemptFirestore(data.email);
       const errorMessage = handleErrorMessage(error as AuthError);
       showToast({
         title: "Error",
@@ -204,34 +165,15 @@ export const useAuthentication = (): AuthenticationResult => {
   const resetPassword = async (email: string): Promise<void> => {
     checkIfIsCancelled();
 
-    const rateLimit = await checkRateLimitFirestore(`reset:${email}`);
-    if (!rateLimit.allowed) {
-      const minutes = Math.ceil(rateLimit.waitSeconds / 60);
-      const errorMessage = `Muitas tentativas de recuperação de senha. Tente novamente em ${minutes} minuto(s).`;
-      showToast({
-        title: "Erro",
-        description: errorMessage,
-        status: "error",
-      });
-      setState((prevState) => ({
-        ...prevState,
-        error: errorMessage,
-        loading: false,
-      }));
-      throw new Error(errorMessage);
-    }
-
     setState({ ...state, loading: true });
     try {
       await sendPasswordResetEmail(auth, email);
-      await recordFailedAttemptFirestore(`reset:${email}`);
       showToast({
         title: "Success",
         description: "E-mail de redefinição de senha enviado!",
         status: "success",
       });
     } catch (error) {
-      await recordFailedAttemptFirestore(`reset:${email}`);
       const errorMessage = handleErrorMessage(error as AuthError);
       showToast({
         title: "Error",
