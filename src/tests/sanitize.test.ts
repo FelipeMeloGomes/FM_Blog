@@ -123,8 +123,8 @@ describe("sanitizeHtml", () => {
 
   describe("given server-side rendering context", () => {
     it("should return string when window is undefined", () => {
-      const originalWindow = global.window;
-      Object.defineProperty(global, "window", {
+      const originalWindow = globalThis.window;
+      Object.defineProperty(globalThis, "window", {
         value: undefined,
         writable: true,
       });
@@ -132,7 +132,7 @@ describe("sanitizeHtml", () => {
       const html = "<p>Test</p>";
       const result = sanitizeHtml(html);
 
-      Object.defineProperty(global, "window", {
+      Object.defineProperty(globalThis, "window", {
         value: originalWindow,
         writable: true,
       });
