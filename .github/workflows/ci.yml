@@ -47,9 +47,38 @@ jobs:
       - name: Build de producao
         run: pnpm build
 
+  rules:
+    name: Regras do Firestore (emulador)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Instalar Java 21 (exigido pelo emulador)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Testar as regras contra o emulador
+        run: pnpm test:rules
+
   deploy:
     name: Deploy (Vercel)
-    needs: quality
+    needs: [quality, rules]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta'
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -24,8 +24,6 @@ export const CONSTANTS = {
   },
 
   AUTH: {
-    RATE_LIMIT_MAX_ATTEMPTS: 5,
-    RATE_LIMIT_WINDOW_MS: 15 * 60 * 1000,
     VIEW_LIMIT_WINDOW_MS: 24 * 60 * 60 * 1000,
   },
 
@@ -66,7 +64,6 @@ export const MESSAGES = {
     PASSWORD_MISMATCH: "As senhas precisam ser iguais",
     TITLE_TOO_SHORT: "Título deve ter pelo menos 10 caracteres",
     BODY_TOO_SHORT: "O conteúdo deve ter pelo menos 10 caracteres",
-    RATE_LIMIT_EXCEEDED: "Muitas tentativas. Tente novamente em",
     COMMON_PASSWORD: "Esta senha é muito comum. Escolha uma senha mais segura",
   },
 

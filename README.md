@@ -94,15 +94,36 @@ cp .env.example .env.local
 | `VITE_FIREBASE_APP_ID` | Console do Firebase → Configurações do projeto |
 | `VITE_CLOUDINARY_CLOUD_NAME` | Dashboard do Cloudinary |
 | `VITE_CLOUDINARY_UPLOAD_PRESET` | Cloudinary → Settings → Upload → Upload presets |
+| `VITE_RECAPTCHA_SITE_KEY` | App Check → Firestore → reCAPTCHA v3 (opcional) |
+| `VITE_APPCHECK_DEBUG_TOKEN` | Token de debug do App Check, só em desenvolvimento (opcional) |
 
 > [!IMPORTANT]
 > Variáveis com prefixo `VITE_` são embutidas no bundle do cliente. Use apenas as chaves públicas do Firebase e um preset unsigned do Cloudinary — nunca credenciais administrativas.
 
-As regras e os índices do Firestore estão versionados em `firestore.rules` e `firestore.indexes.json`. Publique-os com:
+As regras e os índices do Firestore estão versionados em `firestore.rules` e `firestore.indexes.json`. Publique as regras com:
 
 ```bash
-firebase deploy --only firestore:rules,firestore:indexes
+firebase deploy --only firestore:rules
 ```
+
+Antes de publicar, rode `pnpm test:rules`: são 53 cenários contra o emulador, cobrindo a permissão de publicar (custom claim `author`), comentários, curtidas, salvos e visualizações. Os índices mudam com menos frequência e merecem um deploy próprio (`--only firestore:indexes`) — o Firebase recalcula índices ao subir esse alvo, o que pode demorar e custar leitura.
+
+### App Check
+
+Sem `VITE_RECAPTCHA_SITE_KEY` o App Check não é inicializado e nada muda. Para ativar:
+
+1. Console do Firebase → App Check → Firestore → reCAPTCHA v3 → registrar o app web.
+2. Copiar a chave e definir `VITE_RECAPTCHA_SITE_KEY` no `.env.local` e na Vercel.
+3. Deixar a exigência em **monitoramento** por alguns dias, conferindo a proporção de tráfego verificado.
+4. Só então marcar como exigido.
+
+### Backup
+
+```bash
+pnpm backup
+```
+
+Grava `backups/firestore-<data>.json` com todas as coleções, usando a credencial do Firebase CLI já autenticado. Não usa export para Cloud Storage, então funciona no plano Spark. O arquivo é ignorado pelo git — copie para fora da máquina se quiser durabilidade. Não há restauração automática.
 
 ## Rodando localmente
 

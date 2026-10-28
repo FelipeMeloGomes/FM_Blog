@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { initAppCheck } from "./appCheck";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -12,6 +13,11 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+// Precisa vir antes do primeiro request. Sem VITE_RECAPTCHA_SITE_KEY, não faz
+// nada e o app segue funcionando como antes.
+initAppCheck(app);
+
 const db = getFirestore(app);
 const auth = getAuth(app);
 
