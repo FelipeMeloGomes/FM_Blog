@@ -115,6 +115,8 @@ export const useAuthentication = (): AuthenticationResult => {
         status: "success",
       });
     } catch (error) {
+      // Precisa propagar: a tela de login só navega para "/" depois que a
+      // promise resolve. Sem o throw, credencial errada levava para a home.
       const errorMessage = handleErrorMessage(error as AuthError);
       showToast({
         title: "Error",
@@ -128,6 +130,7 @@ export const useAuthentication = (): AuthenticationResult => {
         loading: false,
         cancelled: false,
       }));
+      throw new Error(errorMessage);
     }
   };
 
@@ -146,7 +149,8 @@ export const useAuthentication = (): AuthenticationResult => {
         status: "success",
       });
     } catch (error) {
-      const errorMessage = handleErrorMessage(error as AuthError);
+      const authError = error as AuthError;
+      const errorMessage = handleErrorMessage(authError);
       showToast({
         title: "Error",
         description: errorMessage,
@@ -159,6 +163,9 @@ export const useAuthentication = (): AuthenticationResult => {
         loading: false,
         cancelled: false,
       }));
+      // Preserva o código: a tela precisa distinguir "usuário fechou o popup"
+      // (silencioso) de uma falha real.
+      throw Object.assign(new Error(errorMessage), { code: authError.code });
     }
   };
 

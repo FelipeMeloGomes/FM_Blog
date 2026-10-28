@@ -141,8 +141,13 @@ const LoginForm = ({
       if (onSubmit) onSubmit({} as any);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+      const code = (err as { code?: string } | null)?.code;
 
+      // Fechar o popup não é erro: o hook traduz a mensagem, então o código
+      // do Firebase é o que identifica o cancelamento.
       if (
+        code === "auth/popup-closed-by-user" ||
+        code === "auth/cancelled-popup-request" ||
         errorMessage.includes("popup-closed-by-user") ||
         errorMessage.includes("cancelled") ||
         errorMessage.includes("closed")
