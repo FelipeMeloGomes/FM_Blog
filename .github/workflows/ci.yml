@@ -59,7 +59,9 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       # main publica em producao; beta publica em preview
       VERCEL_ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
-      VERCEL_TARGET_FLAG: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+      VERCEL_PROD_FLAG: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+      VERCEL_PULL_FLAGS: ${{ github.ref == 'refs/heads/beta' && '--git-branch=beta' || '' }}
+      VERCEL_DEPLOY_FLAGS: ${{ github.ref == 'refs/heads/beta' && '--meta githubDeployment=1 --meta githubCommitRef=beta' || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -79,16 +81,16 @@ jobs:
           exit 1
 
       - name: Mostrar o alvo do deploy
-        run: echo "branch=${{ github.ref_name }} ambiente=$VERCEL_ENVIRONMENT flags=[$VERCEL_TARGET_FLAG]"
+        run: echo "branch=${{ github.ref_name }} ambiente=$VERCEL_ENVIRONMENT flags=[$VERCEL_PROD_FLAG $VERCEL_DEPLOY_FLAGS]"
 
       - name: Instalar a Vercel CLI
         run: npm install --global vercel@latest
 
       - name: Baixar as variaveis do projeto
-        run: vercel pull --yes --environment="$VERCEL_ENVIRONMENT" --token="$VERCEL_TOKEN"
+        run: vercel pull --yes --environment="$VERCEL_ENVIRONMENT" $VERCEL_PULL_FLAGS --token="$VERCEL_TOKEN"
 
       - name: Build com as variaveis do ambiente
-        run: vercel build $VERCEL_TARGET_FLAG --token="$VERCEL_TOKEN"
+        run: vercel build $VERCEL_PROD_FLAG --token="$VERCEL_TOKEN"
 
       - name: Publicar
-        run: vercel deploy --prebuilt $VERCEL_TARGET_FLAG --token="$VERCEL_TOKEN"
+        run: vercel deploy --prebuilt $VERCEL_PROD_FLAG $VERCEL_DEPLOY_FLAGS --token="$VERCEL_TOKEN"
