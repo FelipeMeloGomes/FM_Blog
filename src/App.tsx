@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { AuthorRoute } from "./components/AuthorRoute";
 import { Layout } from "./components/Layout";
 import { PrivateRoute } from "./components/PrivateRoute";
 import { PublicRoute } from "./components/PublicRoute";
@@ -63,17 +64,17 @@ const AppContent = () => {
               <Route
                 path="posts/create"
                 element={
-                  <PrivateRoute>
+                  <AuthorRoute>
                     <CreatePost />
-                  </PrivateRoute>
+                  </AuthorRoute>
                 }
               />
               <Route
                 path="posts/edit/:id"
                 element={
-                  <PrivateRoute>
+                  <AuthorRoute>
                     <EditPost />
-                  </PrivateRoute>
+                  </AuthorRoute>
                 }
               />
               <Route path="posts/:id" element={<Post />} />

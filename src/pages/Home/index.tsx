@@ -5,12 +5,15 @@ import { Pagination } from "../../components/Pagination";
 import { PostCard } from "../../components/PostCard";
 import { PostListSkeleton } from "../../components/PostListSkeleton";
 import { SearchForm } from "../../components/SearchForm";
+import { useAuthValue } from "../../contexts/AuthContext";
 import { usePaginatedDocuments } from "../../hooks/usePaginatedDocuments";
 import { useSearchPost } from "../../hooks/useSearchPost";
+import { isAuthor } from "../../utils/authors";
 
 const Home = () => {
   const navigate = useNavigate();
   const [_searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuthValue() ?? {};
 
   const { posts, loading, currentPage, totalPages, goToPage, isLoadingPage } =
     usePaginatedDocuments("posts", null, null, 6);
@@ -70,7 +73,11 @@ const Home = () => {
           icon={<FiFileText />}
           title="Nenhum post ainda"
           description="Seja o primeiro a publicar algo incrível aqui."
-          action={{ label: "Criar primeiro post", onClick: () => navigate("/posts/create") }}
+          action={
+            isAuthor(user?.uid)
+              ? { label: "Criar primeiro post", onClick: () => navigate("/posts/create") }
+              : undefined
+          }
         />
       ) : (
         <>

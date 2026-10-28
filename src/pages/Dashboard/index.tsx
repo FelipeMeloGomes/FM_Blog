@@ -26,6 +26,7 @@ import { useMetrics } from "../../hooks/useMetrics";
 import { usePostsViews } from "../../hooks/usePostsViews";
 import { useUserPosts } from "../../lib/hooks/usePostsQuery";
 import { calculateReadTime, formatDateShort } from "../../utils/date";
+import { isAuthor } from "../../utils/authors";
 import { useSessionStorage } from "../../hooks/useSessionStorage";
 
 interface MenuDropdownProps {
@@ -373,14 +374,16 @@ const Dashboard = () => {
               Selecionar
             </Button>
           )}
-          <Button
-            onClick={() => navigate("/posts/create")}
-            size="sm"
-            className="flex-1 sm:flex-initial gap-2"
-          >
-            <FiEdit className="h-4 w-4" />
-            Novo post
-          </Button>
+          {isAuthor(user?.uid) && (
+            <Button
+              onClick={() => navigate("/posts/create")}
+              size="sm"
+              className="flex-1 sm:flex-initial gap-2"
+            >
+              <FiEdit className="h-4 w-4" />
+              Novo post
+            </Button>
+          )}
         </div>
       </div>
 
@@ -420,7 +423,11 @@ const Dashboard = () => {
           icon={<FiEdit />}
           title="Você ainda não publicou nada"
           description="Seus posts aparecerão aqui depois que você publicar."
-          action={{ label: "Escrever primeiro post", onClick: () => navigate("/posts/create") }}
+          action={
+            isAuthor(user?.uid)
+              ? { label: "Escrever primeiro post", onClick: () => navigate("/posts/create") }
+              : undefined
+          }
         />
       ) : totalFilteredPosts === 0 ? (
         <EmptyState

@@ -4,6 +4,18 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ---------------------------------------------------------------------
+    // Quem pode publicar. Espelha src/utils/authors.ts.
+    // O cadastro e aberto, entao sem isto qualquer conta criada em segundos
+    // publicaria no blog. Para adicionar um autor, inclua o uid na lista e
+    // em src/utils/authors.ts (a UI precisa da mesma lista para esconder os
+    // botoes). O uid nao e segredo: ele ja aparece no campo `uid` dos posts.
+    // ---------------------------------------------------------------------
+    function isAuthor() {
+      return request.auth != null
+             && request.auth.uid in ['3mgWMmUyNvW2iIJyTirGhxHt4hE3'];
+    }
+
+    // ---------------------------------------------------------------------
     // Preferencias do usuario: cada um le e escreve apenas o proprio doc.
     // ---------------------------------------------------------------------
     match /userPreferences/{userId} {
@@ -42,7 +54,7 @@ service cloud.firestore {
     match /posts/{postId} {
       allow read: if true;
 
-      allow create: if request.auth != null
+      allow create: if isAuthor()
                     && request.resource.data.uid == request.auth.uid
                     && request.resource.data.title is string
                     && request.resource.data.title.size() >= 6
@@ -63,7 +75,7 @@ service cloud.firestore {
       // Autor edita o proprio post. O formulario reenvia alguns campos com o
       // mesmo valor (uid, createdBy, likes, likeCount) e titleLower muda junto
       // com o title; por isso esses campos sao aceitos mas precisam ficar iguais.
-      allow update: if request.auth != null
+      allow update: if isAuthor()
                     && resource.data.uid == request.auth.uid
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
                          'title', 'titleLower', 'body', 'image', 'tagsArray',
@@ -99,7 +111,7 @@ service cloud.firestore {
                           && request.resource.data.get('likeCount', 0) + 1 == resource.data.get('likeCount', 0))
                        );
 
-      allow delete: if request.auth != null
+      allow delete: if isAuthor()
                     && resource.data.uid == request.auth.uid;
     }
 

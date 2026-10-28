@@ -2,9 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { FiMenu, FiMoon, FiSun, FiX } from "react-icons/fi";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useColorMode } from "../../contexts/ColorModeContext";
+import { isAuthor } from "../../utils/authors";
 
 interface NavBarMobileProps {
-  user: { displayName?: string | null; email?: string | null; photoURL?: string | null } | null;
+  user: {
+    displayName?: string | null;
+    email?: string | null;
+    photoURL?: string | null;
+    uid?: string | null;
+  } | null;
   logout: () => void;
 }
 
@@ -36,7 +42,7 @@ const NavBarMobile = ({ user, logout }: NavBarMobileProps) => {
     { text: "Início", to: "/", show: true },
     { text: "Entrar", to: "/login", show: !user },
     { text: "Cadastrar", to: "/register", show: !user },
-    { text: "Novo Post", to: "/posts/create", show: !!user },
+    { text: "Novo Post", to: "/posts/create", show: isAuthor(user?.uid) },
     { text: "Meu Perfil", to: "/profile", show: !!user },
     { text: "Meus Posts", to: "/dashboard", show: !!user },
     { text: "Posts Salvos", to: "/saved", show: !!user },
