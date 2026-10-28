@@ -1,28 +1,47 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------------
+    // Preferencias do usuario: cada um le e escreve apenas o proprio doc.
+    // ---------------------------------------------------------------------
     match /userPreferences/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId
-                   && request.resource.data.colorMode is string
-                   && request.resource.data.colorMode in ['light', 'dark'];
-      allow update: if request.auth != null && request.auth.uid == userId
-                   && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['colorMode']);
+
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.colorMode is string
+                    && request.resource.data.colorMode in ['light', 'dark'];
+
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['colorMode'])
+                    && request.resource.data.colorMode is string
+                    && request.resource.data.colorMode in ['light', 'dark'];
+
       allow delete: if false;
     }
 
+    // ---------------------------------------------------------------------
+    // Rate limit: fechado de proposito.
+    //
+    // O cliente consulta esta colecao ANTES do login (request.auth == null).
+    // Com qualquer regra que exigisse autenticacao a leitura falhava, o catch
+    // do hook devolvia "allowed: true" e o limite nunca era aplicado. Pior:
+    // gravava o e-mail em texto claro. Rate limit de verdade precisa rodar no
+    // servidor (Cloud Function / Identity Platform), nao no cliente.
+    // ---------------------------------------------------------------------
     match /rateLimits/{emailHash} {
-      allow read: if request.auth != null
-                  && request.auth.token.email == resource.data.email;
-      allow write: if request.auth != null
-                   && request.resource.data.email == request.auth.token.email
-                   && request.resource.data.email is string
-                   && request.resource.data.attempts is list
-                   && request.resource.data.attempts.size() <= 20;
+      allow read, write: if false;
     }
 
+    // ---------------------------------------------------------------------
+    // Posts: leitura publica (blog), escrita restrita ao autor.
+    // ---------------------------------------------------------------------
     match /posts/{postId} {
       allow read: if true;
+
       allow create: if request.auth != null
                     && request.resource.data.uid == request.auth.uid
                     && request.resource.data.title is string
@@ -34,55 +53,138 @@ service cloud.firestore {
                     && request.resource.data.image.size() > 0
                     && request.resource.data.createdBy is string
                     && request.resource.data.createdBy.size() > 0
-                    && request.resource.data.createdBy.size() <= 50
+                    && request.resource.data.createdBy.size() <= 100
                     && request.resource.data.tagsArray is list
                     && request.resource.data.tagsArray.size() <= 10
                     && request.resource.data.likeCount == 0
                     && request.resource.data.likes == []
-                    && request.resource.data.views == 0;
+                    && !request.resource.data.keys().hasAny(['views']);
+
+      // Autor edita o proprio post. O formulario reenvia alguns campos com o
+      // mesmo valor (uid, createdBy, likes, likeCount) e titleLower muda junto
+      // com o title; por isso esses campos sao aceitos mas precisam ficar iguais.
       allow update: if request.auth != null
                     && resource.data.uid == request.auth.uid
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-                      'title', 'body', 'image', 'tagsArray', 'updatedAt'
-                    ]);
-      allow update: if request.auth == null 
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']);
+                         'title', 'titleLower', 'body', 'image', 'tagsArray',
+                         'photoURL', 'updatedAt', 'uid', 'createdBy', 'likes', 'likeCount'
+                       ])
+                    && request.resource.data.get('uid', '') == resource.data.get('uid', '')
+                    && request.resource.data.get('createdBy', '') == resource.data.get('createdBy', '')
+                    && request.resource.data.get('likes', []) == resource.data.get('likes', [])
+                    && request.resource.data.get('likeCount', 0) == resource.data.get('likeCount', 0)
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() >= 6
+                    && request.resource.data.title.size() <= 200
+                    && request.resource.data.body is string
+                    && request.resource.data.body.size() >= 10
+                    && request.resource.data.image is string
+                    && request.resource.data.image.size() > 0
+                    && request.resource.data.tagsArray is list
+                    && request.resource.data.tagsArray.size() <= 10;
+
+      // Curtir / descurtir. So altera likes e likeCount, e precisa ser coerente
+      // com o uid de quem chama: um voto por usuario, contador junto.
+      allow update: if request.auth != null
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likeCount'])
+                    && (
+                         (request.resource.data.get('likes', []).hasAll(resource.data.get('likes', []))
+                          && request.resource.data.get('likes', []).size() == resource.data.get('likes', []).size() + 1
+                          && request.auth.uid in request.resource.data.get('likes', [])
+                          && request.resource.data.get('likeCount', 0) == resource.data.get('likeCount', 0) + 1)
+                         ||
+                         (resource.data.get('likes', []).hasAll(request.resource.data.get('likes', []))
+                          && request.resource.data.get('likes', []).size() + 1 == resource.data.get('likes', []).size()
+                          && !(request.auth.uid in request.resource.data.get('likes', []))
+                          && request.resource.data.get('likeCount', 0) + 1 == resource.data.get('likeCount', 0))
+                       );
+
       allow delete: if request.auth != null
                     && resource.data.uid == request.auth.uid;
     }
 
+    // ---------------------------------------------------------------------
+    // Comentarios: leitura publica, escrita restrita ao autor.
+    // ---------------------------------------------------------------------
     match /comments/{commentId} {
       allow read: if true;
+
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.postId is string
+                    && exists(/databases/$(database)/documents/posts/$(request.resource.data.postId))
                     && request.resource.data.content is string
                     && request.resource.data.content.size() >= 1
-                    && request.resource.data.postId is string
-                    && exists(/databases/$(database)/documents/posts/$(request.resource.data.postId));
+                    && request.resource.data.content.size() <= 2000
+                    && request.resource.data.userName is string
+                    && request.resource.data.userName.size() >= 1
+                    && request.resource.data.userName.size() <= 100
+                    && request.resource.data.likeCount == 0
+                    && request.resource.data.likes == []
+                    && (!request.resource.data.keys().hasAny(['parentId'])
+                        || request.resource.data.parentId == null
+                        || request.resource.data.parentId is string);
+
+      // Autor edita apenas o texto. Antes a regra comparava o userId do
+      // documento NOVO, entao qualquer logado podia tomar um comentario alheio.
       allow update: if request.auth != null
-                    && request.resource.data.userId == request.auth.uid;
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'updatedAt'])
+                    && request.resource.data.content is string
+                    && request.resource.data.content.size() >= 1
+                    && request.resource.data.content.size() <= 2000;
+
+      // Curtir comentario de outra pessoa (o autor edita pelo bloco acima).
+      allow update: if request.auth != null
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likeCount'])
+                    && (
+                         (request.resource.data.get('likes', []).hasAll(resource.data.get('likes', []))
+                          && request.resource.data.get('likes', []).size() == resource.data.get('likes', []).size() + 1
+                          && request.auth.uid in request.resource.data.get('likes', [])
+                          && request.resource.data.get('likeCount', 0) == resource.data.get('likeCount', 0) + 1)
+                         ||
+                         (resource.data.get('likes', []).hasAll(request.resource.data.get('likes', []))
+                          && request.resource.data.get('likes', []).size() + 1 == resource.data.get('likes', []).size()
+                          && !(request.auth.uid in request.resource.data.get('likes', []))
+                          && request.resource.data.get('likeCount', 0) + 1 == resource.data.get('likeCount', 0))
+                       );
+
       allow delete: if request.auth != null
                     && resource.data.userId == request.auth.uid;
     }
 
+    // ---------------------------------------------------------------------
+    // Vizualizacoes: um doc por (post, usuario), com id derivado.
+    // A leitura e publica porque a contagem exibida no site usa
+    // getCountFromServer sobre esta colecao.
+    // ---------------------------------------------------------------------
     match /postViews/{viewId} {
       allow read: if true;
+
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid
                     && request.resource.data.postId is string
+                    && viewId == request.resource.data.postId + '_' + request.auth.uid
                     && exists(/databases/$(database)/documents/posts/$(request.resource.data.postId));
+
       allow update, delete: if false;
     }
 
+    // ---------------------------------------------------------------------
+    // Posts salvos: cada um enxerga apenas os proprios.
+    // ---------------------------------------------------------------------
     match /savedPosts/{savedId} {
       allow read: if request.auth != null
                   && resource.data.userId == request.auth.uid;
+
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid
                     && request.resource.data.postId is string
                     && exists(/databases/$(database)/documents/posts/$(request.resource.data.postId));
+
       allow delete: if request.auth != null
                     && resource.data.userId == request.auth.uid;
+
       allow update: if false;
     }
   }
